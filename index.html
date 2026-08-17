@@ -1,0 +1,1070 @@
+<div id="app"></div>
+<style>
+  :root{
+    --bg:#F7F8FC; --panel:#FFFFFF; --ink:#1A1D2E; --muted:#6B7280; --line:#DDE1EE;
+    --accent:#1B3A8C; --accent-soft:#EEF1FA; --warn:#B5501F; --warn-soft:#F6E7DE;
+    --navy-dark:#0F2260; --gold:#FFC82D;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  #app{font-family:var(--sans);color:var(--ink);background:var(--bg);max-width:960px;margin:0 auto;}
+  .topbar{height:64px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 20px;gap:14px;position:relative;overflow:hidden;}
+  .topbar .left{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+  .topbar .logo{height:40px;width:auto;display:block;flex-shrink:0;}
+  .topbar h1{font-size:17px;font-weight:700;margin:0;letter-spacing:-0.01em;color:var(--ink);}
+  .topbar .sub{color:var(--muted);font-size:12px;margin-top:2px;}
+  .gear{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:var(--sans);position:relative;z-index:1;}
+  .gear:hover{border-color:var(--accent);color:var(--accent);}
+
+  .flow{display:flex;align-items:center;gap:0;margin:20px 4px;}
+  .flownode{flex:1;display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;transition:all .15s;}
+  .flownode.active{border-color:var(--accent);background:var(--accent-soft);}
+  .flownode .num{width:22px;height:22px;border-radius:50%;background:var(--muted);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .flownode.active .num{background:var(--accent);}
+  .flownode .label{font-size:13.5px;font-weight:600;}
+  .flownode .desc{font-size:11px;color:var(--muted);margin-top:1px;}
+  .flowline{width:28px;height:1px;background:var(--line);flex-shrink:0;}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;margin:0 4px 40px;}
+  .section{margin-bottom:26px;}
+  .section:last-child{margin-bottom:0;}
+  .section h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);font-weight:700;margin:0 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;color:var(--ink);}
+  .field .hint{font-size:11px;color:var(--muted);font-weight:400;display:block;margin-top:3px;}
+  .field input[type=text],.field input[type=date],.field input[type=number],.field textarea,.field select{
+    width:100%;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;font-family:var(--sans);color:var(--ink);background:#fff;
+  }
+  .field input:disabled{background:#F0F2F1;color:var(--muted);}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
+  .field textarea{min-height:52px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .jobkey input{font-family:var(--mono);}
+
+  .checkgroup{display:flex;flex-wrap:wrap;gap:10px 18px;}
+  .checkitem{display:flex;align-items:center;gap:6px;font-size:12.5px;}
+  .checkitem input{width:auto;}
+  .yesno-group{display:flex;gap:8px;}
+  .yesno-btn{padding:8px 22px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--sans);}
+  .yesno-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .yesno-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .money-wrap{position:relative;}
+  .money-wrap .money-prefix{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;}
+  .field .money-wrap input[type=text]{padding-left:22px;}
+  .audience-name-input{background:var(--accent-soft) !important;border:1px solid var(--accent) !important;border-radius:6px;padding:8px 10px;font-size:13px;font-family:var(--sans);color:var(--ink);font-weight:700;width:100%;}
+  .audience-name-input:focus{background:#fff !important;outline:2px solid var(--accent);outline-offset:0;}
+  .job-id-preview{background:var(--accent-soft);border:1px solid var(--accent);border-radius:6px;padding:9px 12px;font-family:var(--mono);font-weight:700;font-size:13px;color:var(--accent);}
+  .audience-summary{padding:12px 16px;}
+  .audience-summary-row{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .audience-summary-name{font-weight:700;font-size:13.5px;}
+  .audience-summary-desc{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .audience-summary-actions{display:flex;gap:8px;flex-shrink:0;}
+  .job-search-results{margin-top:8px;border:1px solid var(--line);border-radius:8px;max-height:280px;overflow-y:auto;}
+  .job-search-empty{padding:14px 16px;font-size:12.5px;color:var(--muted);}
+  .job-search-row{padding:10px 16px;border-bottom:1px solid var(--line);cursor:pointer;}
+  .job-search-row:last-child{border-bottom:none;}
+  .job-search-row:hover{background:var(--accent-soft);}
+  .job-search-row-id{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--accent);}
+  .job-search-row-meta{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+  .review-heading{font-size:20px;font-weight:700;margin-bottom:2px;}
+  .review-subheading{font-family:var(--mono);color:var(--muted);font-size:12.5px;margin-bottom:22px;}
+  .review-row{display:grid;grid-template-columns:260px 1fr;gap:14px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .review-row:last-child{border-bottom:none;}
+  .review-label{font-size:12px;font-weight:600;color:var(--muted);}
+  .review-value{font-size:13px;color:var(--ink);white-space:pre-wrap;}
+
+  .lookupbar{display:flex;gap:8px;margin-bottom:20px;}
+  .lookupbar input{flex:1;}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);}
+  .btn:hover{background:#0c5652;}
+  .btn:disabled{background:var(--muted);cursor:not-allowed;}
+  .btn.secondary{background:none;border:1px solid var(--line);color:var(--ink);}
+  .btn.secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.small{padding:5px 10px;font-size:11.5px;}
+  .btn.danger{background:none;border:1px solid var(--warn);color:var(--warn);}
+  .btn.danger:hover{background:var(--warn-soft);}
+
+  .refbox{background:var(--accent-soft);border:1px solid var(--accent);border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:12.5px;}
+  .refbox .reftitle{font-weight:700;color:var(--accent);margin-bottom:6px;}
+  .refgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .refgrid div span{display:block;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+
+  .waterfallrow{display:grid;grid-template-columns:1fr 140px;gap:10px;align-items:center;margin-bottom:8px;}
+  .waterfallrow .catname{font-size:13px;font-weight:600;}
+
+  .msg{padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;}
+  .msg.error{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);}
+  .msg.success{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);}
+  .msg a{color:inherit;font-weight:700;}
+
+  .audience{border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px;background:#FAFBFA;}
+  .audience-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .audience-head .titlefield{flex:1;margin-right:12px;}
+  .crit-table{margin-bottom:10px;}
+  .crit-row{display:grid;grid-template-columns:1fr 130px 1fr 32px;gap:8px;margin-bottom:6px;align-items:center;}
+  .crit-row input,.crit-row select{padding:6px 8px;font-size:12.5px;border:1px solid var(--line);border-radius:5px;font-family:var(--sans);}
+  .crit-row .rm{background:none;border:none;color:var(--warn);cursor:pointer;font-size:15px;line-height:1;}
+  .crit-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:6px;}
+  .add-audience{width:100%;border:1px dashed var(--line);background:none;color:var(--accent);border-radius:8px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;}
+  .add-audience:hover{background:var(--accent-soft);border-color:var(--accent);}
+  .add-crit{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;padding:2px 0;}
+  .geo-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(28,37,48,.5);display:flex;align-items:center;justify-content:center;z-index:50;}
+  .modal{background:#fff;border-radius:10px;padding:24px;width:420px;max-width:90vw;}
+  .modal h3{margin:0 0 6px;font-size:15px;}
+  .modal p{font-size:12.5px;color:var(--muted);margin:0 0 14px;}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+
+  .footer-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
+  .required{color:var(--warn);}
+</style>
+
+<script>
+(function(){
+  var MIRROR_SOURCE_KEYS = ['digitalGoLiveDate','mailDate'];
+  var JOB_ID_TRIGGER_KEYS = ['jobNumberRaw','date','customer'];
+
+  function computeJobId(values){
+    var raw = (values.jobNumberRaw || '').trim();
+    var client = (values.customer || '').trim();
+    if(!raw || !client) return '';
+    var yearSource = values.date ? new Date(values.date + 'T00:00:00') : new Date();
+    var yy = String(yearSource.getFullYear()).slice(-2);
+    return yy + '-' + client + '-' + raw;
+  }
+
+  function syncJobIdPreview(values){
+    values.jobNumber = computeJobId(values);
+    var previewEl = document.getElementById('job-id-preview');
+    if(previewEl){
+      previewEl.textContent = values.jobNumber ? (values.jobNumber + ' DP Instructions') : 'Fill in Job Number and Client to generate';
+    }
+  }
+  var OPERATORS = ['equals','not equals','greater than','less than','greater than or equal','less than or equal','contains','since (date)','before (date)','within (distance)'];
+
+  var DATA_SOURCE_OPTIONS = [
+    {key:'franchise', label:'Franchise data'},
+    {key:'corporate', label:'Corporate data'},
+    {key:'acxiomProspects', label:'Acxiom Prospects'},
+    {key:'webScraper', label:'Web scraper'},
+    {key:'customerFileProvided', label:'Customer file provided'},
+  ];
+  var EMPLOYEE_OPTIONS = [
+    {value:'chad@reflexblu.com', label:'Chad Stubbs'},
+    {value:'evie@reflexblu.com', label:'Evie Stubbs'},
+    {value:'jackson@reflexblu.com', label:'Jackson McCrary'},
+    {value:'sophie@reflexblu.com', label:'Sophie Dunn'},
+    {value:'steve@reflexblu.com', label:'Steve Pollock'},
+    {value:'taylor@reflexblu.com', label:'Taylor Harris'},
+    {value:'tiffany@reflexblu.com', label:'Tiffany Young'},
+  ];
+
+  var HYGIENE_OPTIONS = [
+    {key:'validAddress', label:'Valid, deliverable address required'},
+    {key:'flagExclusions', label:'Flag & report exclusion counts'},
+  ];
+  var DIGITAL_PLATFORM_OPTIONS = [
+    {key:'facebook', label:'Facebook'},
+    {key:'linkedin', label:'LinkedIn'},
+    {key:'twitter', label:'Twitter'},
+    {key:'display', label:'Display'},
+    {key:'spotify', label:'Spotify'},
+  ];
+
+  var DP_SCHEMA_TOP = [
+    { section:'Initiative', fields:[
+      {key:'campaignGoal', label:'Campaign Goal', type:'textarea', hint:'What is this campaign trying to accomplish?'},
+    ]},
+    { section:'Job Information', fields:[
+      {key:'jobNumberRaw', label:'Job Number', type:'text', required:true, hint:'Short job number, e.g. 1234', row:'jobA'},
+      {key:'date', label:'Date', type:'date', row:'jobA'},
+      {key:'customer', label:'Client', type:'text', required:true, row:'jobB'},
+      {key:'project', label:'Project', type:'text', row:'jobB'},
+      {key:'__jobIdPreview', type:'jobIdPreview'},
+      {key:'requestedBy', label:'Requested By', type:'select', options:EMPLOYEE_OPTIONS, required:true, hint:'Used to notify you when the Post-Processing Writeup is completed'},
+    ]},
+    { section:'Key Dates & Deliverables', fields:[
+      {key:'waterfallDue', label:'Waterfall Report Due Date', type:'date', row:'datesA'},
+      {key:'audiencesPostedDate', label:'Audiences Posted Date', type:'date', row:'datesA'},
+      {key:'digitalGoLiveDate', label:'Digital Go Live Date', type:'date', hint:'Feeds Tracking below automatically', row:'datesB'},
+      {key:'mailDate', label:'Mail Date', type:'date', hint:'Feeds Tracking below automatically', row:'datesB'},
+      {key:'waterfallCounts', label:'Waterfall Report Counts Needed', type:'textarea', hint:'Comma-separated categories, e.g. Source file counts, Foreign counts, Hold counts, Address Errors, Seeds, State, Duplicate Suppressions'},
+    ]},
+    { section:'Channel Deployment', fields:[
+      {key:'channel', label:'Channel(s)', type:'select', options:['Direct Mail','Digital','Both'], triggersRerender:true, row:'chanA', onChangeEffect:function(v){ if(v.channel==='Direct Mail'||v.channel==='Both'){ v.hygiene = v.hygiene || {}; v.hygiene.validAddress = true; } }},
+      {key:'digitalPlatforms', label:'Digital Platform(s)', type:'text', hint:'e.g. Facebook, LinkedIn, Twitter, Display, Spotify', requiredIf:function(v){ return v.channel==='Digital' || v.channel==='Both'; }, row:'chanA'},
+      {key:'variableImagery', label:'Direct Mail Variable Imagery Fields', type:'textarea', hint:'Free text — variable fields needed for creative/lettershop', requiredIf:function(v){ return v.channel==='Direct Mail' || v.channel==='Both'; }},
+    ]},
+    { section:'Volume & Budget', fields:[
+      {key:'budget', label:'Investment', type:'money', row:'volA'},
+      {key:'targetQuantity', label:'Target Quantity (final, post-netdown)', type:'quantity', row:'volA'},
+      {key:'controlGroupNeeded', label:'Control Group Needed?', type:'yesno'},
+      {key:'controlGroup', label:'Control Group Quantity/Logic', type:'textarea', showIf:function(v){ return v.controlGroupNeeded==='Yes'; }, requiredIf:function(v){ return v.controlGroupNeeded==='Yes'; }},
+    ]},
+  ];
+
+  var DP_SCHEMA_BOTTOM = [
+    { section:'Standard Data Cleansing', fields:[
+      {key:'addressCleansingMethod', label:'Address Cleansing Method', type:'select', options:['NCOA','CASS','Both','None'], row:'cleanA'},
+      {key:'caseChange', label:'Case Change', type:'select', options:['Mixed Case','Upper Case','No Change'], row:'cleanA'},
+      {key:'retainOriginalAddress', label:'Retain Original Address', type:'checkboxgroup', options:[{key:'retain', label:'Retain original address'}]},
+      {key:'moveHandling', label:'Move Handling (post-NCOA)', type:'select', options:['Keep if moved — still in state','Keep if moved — out of area','Keep regardless of move destination','Suppress if moved'], hint:'How to treat records NCOA flags as moved', row:'cleanB'},
+      {key:'foreignRecords', label:'Foreign Records Handling', type:'select', options:['Retain in separate file','Suppress','Include in main file'], row:'cleanB'},
+      {key:'householdNaming', label:'Household Naming/Addressing', type:'checkboxgroup', options:[{key:'needed', label:'Household naming/addressing required'}]},
+      {key:'householdNamingConvention', label:'Naming Convention', type:'select', options:['Last Name + Residence','Full Name'], showIf:function(v){ return v.householdNaming && v.householdNaming.needed; }},
+    ]},
+    { section:'Data Hygiene', fields:[
+      {key:'hygiene', label:'Requirements', type:'checkboxgroup', options:HYGIENE_OPTIONS},
+      {key:'dedupLevel', label:'Dedupe Level', type:'select', options:['Household','Last Name + Address','Full Name + Address','Other'], triggersRerender:true},
+      {key:'dedupLevelOther', label:'Specify Dedupe Level', type:'text', showIf:function(v){ return v.dedupLevel === 'Other'; }},
+    ]},
+    { section:'Seeds', fields:[
+      {key:'seedLocation', label:'Seed List Location', type:'text', hint:'Enter "n/a - included in main mailing" if applicable', row:'seedA'},
+      {key:'seedQuantity', label:'Seed Quantity', type:'quantity', row:'seedA'},
+    ]},
+    { section:'Additional Data Processing Instructions', fields:[
+      {key:'additionalInstructions', label:'Additional Instructions', type:'textarea', hint:'Catch-all for anything not covered above'},
+    ]},
+    { section:'Tracking', fields:[
+      {key:'__digitalMirror', type:'mirror', label:'Digital Go Live Date', sourceKey:'digitalGoLiveDate', row:'trkA'},
+      {key:'__mailMirror', type:'mirror', label:'Mail Date', sourceKey:'mailDate', row:'trkA'},
+      {key:'reportingCadence', label:'Reporting Cadence', type:'select', options:['One-time','Daily','Weekly','Monthly','Ongoing / Continuous','Other','N/A'], triggersRerender:true, row:'trkB'},
+      {key:'trackingWindow', label:'Tracking Window', type:'text', hint:'How long tracking runs — distinct from how often it reports', row:'trkB'},
+      {key:'reportingCadenceDays', label:'Cadence (Days)', type:'text', showIf:function(v){ return v.reportingCadence === 'Other'; }},
+      {key:'newTableauUsers', label:'New Tableau Users', type:'textarea', hint:'Name, email'},
+      {key:'responderDef', label:'Responder Definition', type:'textarea'},
+      {key:'furtherTracking', label:'Further Tracking Instructions', type:'textarea'},
+    ]},
+  ];
+
+  var WRITEUP_STATIC = [
+    { section:'Waterfall File', fields:[
+      {key:'waterfallFilePath', label:'Waterfall File Path', type:'text', hint:'Location of the completed waterfall report'},
+    ]},
+    { section:'Deviations', fields:[
+      {key:'deviations', label:'Deviations from DP Instructions & Reason', type:'textarea'},
+    ]},
+    { section:'Data Quality', fields:[
+      {key:'dataQuality', label:'Data Quality Issues Encountered', type:'textarea'},
+    ]},
+    { section:'Final File Confirmation', fields:[
+      {key:'finalCount', label:'Final File Count', type:'text', row:'wfA'},
+      {key:'deliveryTimestamp', label:'Delivery Timestamp', type:'text', row:'wfA'},
+    ]},
+    { section:'Sign-off', fields:[
+      {key:'runBy', label:'Run By', type:'text', row:'wfB'},
+      {key:'qaBy', label:"QA'd By", type:'text', row:'wfB'},
+      {key:'dateCompleted', label:'Date Completed', type:'date', row:'wfB'},
+    ]},
+  ];
+
+  var DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMv6JihaFS4Sp3JN8XCQn_PtGyDA55qp2LYWq6ywPAckM9o2cUdqjzmzqOzEpR7XsX/exec';
+
+  var state = {
+    view:'dp', appsScriptUrl: DEFAULT_APPS_SCRIPT_URL,
+    dpValues:{ audiences:[] },
+    writeupJobNumber:'', writeupJob:null, writeupWaterfall:[], writeupValues:{},
+    allJobs:null, jobsLoading:false, jobSearchQuery:''
+  };
+  var audienceIdCounter = 1;
+
+  function el(tag, attrs, children){
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function(k){
+      if(k==='class') e.className = attrs[k];
+      else if(k==='html') e.innerHTML = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    });
+    (children||[]).forEach(function(c){ if(c) e.appendChild(c); });
+    return e;
+  }
+  function text(s){ return document.createTextNode(s); }
+
+  function formatThousands(raw){
+    if(!raw) return '';
+    var parts = raw.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  }
+
+  function fieldInput(f, values, container){
+    if(f.showIf && !f.showIf(values)) return;
+
+    if(f.type === 'money' || f.type === 'quantity'){
+      var mfwrap = el('div', {class:'field'});
+      var mfRequired = f.required || (f.requiredIf && f.requiredIf(values));
+      var mflbl = el('label', {}, [text(f.label + (mfRequired ? ' ' : ''))]);
+      if(mfRequired) mflbl.appendChild(el('span',{class:'required'},[text('*')]));
+      mfwrap.appendChild(mflbl);
+      var moneyWrap = el('div', {class: f.type === 'money' ? 'money-wrap' : ''});
+      if(f.type === 'money') moneyWrap.appendChild(el('span',{class:'money-prefix'},[text('$')]));
+      var mfInput = el('input', {type:'text', inputmode:'decimal'});
+      mfInput.value = values[f.key] || '';
+      mfInput.addEventListener('input', function(){
+        var raw = mfInput.value.replace(/[^0-9.]/g,'');
+        var formatted = formatThousands(raw);
+        values[f.key] = formatted;
+        mfInput.value = formatted;
+      });
+      moneyWrap.appendChild(mfInput);
+      mfwrap.appendChild(moneyWrap);
+      if(f.hint) mfwrap.appendChild(el('span',{class:'hint'},[text(f.hint)]));
+      container.appendChild(mfwrap);
+      return;
+    }
+
+    if(f.type === 'yesno'){
+      var ywrap = el('div', {class:'field'});
+      ywrap.appendChild(el('label', {}, [text(f.label)]));
+      var ygrp = el('div', {class:'yesno-group'});
+      ['Yes','No'].forEach(function(opt){
+        var b = el('button', {type:'button', class:'yesno-btn' + (values[f.key]===opt ? ' active' : '')}, [text(opt)]);
+        b.addEventListener('click', function(){ values[f.key] = opt; render(); });
+        ygrp.appendChild(b);
+      });
+      ywrap.appendChild(ygrp);
+      container.appendChild(ywrap);
+      return;
+    }
+
+    if(f.type === 'jobIdPreview'){
+      var jwrap = el('div', {class:'field'});
+      jwrap.appendChild(el('label', {}, [text('Job ID / Sheet Name')]));
+      var previewBox = el('div', {class:'job-id-preview', id:'job-id-preview'});
+      var current = values.jobNumber ? (values.jobNumber + ' DP Instructions') : 'Fill in Job Number and Client to generate';
+      previewBox.textContent = current;
+      jwrap.appendChild(previewBox);
+      jwrap.appendChild(el('span',{class:'hint'},[text('Auto-generated as {Year}-{Client}-{Job Number} — used for the Sheet name and in emails')]));
+      container.appendChild(jwrap);
+      return;
+    }
+
+    if(f.type === 'mirror'){
+      var mwrap = el('div', {class:'field'});
+      mwrap.appendChild(el('label', {}, [text(f.label)]));
+      var mInput = el('input', {type:'date', disabled:'disabled', id:'mirror-' + f.sourceKey});
+      mInput.value = values[f.sourceKey] || '';
+      mwrap.appendChild(mInput);
+      if(f.hint) mwrap.appendChild(el('span',{class:'hint'},[text(f.hint)]));
+      container.appendChild(mwrap);
+      return;
+    }
+
+    var wrap = el('div', {class:'field'});
+    var isRequired = f.required || (f.requiredIf && f.requiredIf(values));
+    var lbl = el('label', {}, [text(f.label + (isRequired ? ' ' : ''))]);
+    if(isRequired) lbl.appendChild(el('span',{class:'required'},[text('*')]));
+    wrap.appendChild(lbl);
+
+    if(f.type === 'checkboxgroup'){
+      values[f.key] = values[f.key] || {};
+      var grp = el('div', {class:'checkgroup'});
+      f.options.forEach(function(o){
+        var id = 'chk_' + f.key + '_' + o.key;
+        var item = el('label', {class:'checkitem', for:id});
+        var cb = el('input', {type:'checkbox', id:id});
+        cb.checked = !!values[f.key][o.key];
+        cb.addEventListener('change', function(){ values[f.key][o.key] = cb.checked; render(); });
+        item.appendChild(cb); item.appendChild(text(o.label));
+        grp.appendChild(item);
+      });
+      wrap.appendChild(grp);
+      container.appendChild(wrap);
+      return;
+    }
+
+    var input;
+    if(f.type === 'textarea'){
+      input = el('textarea', {});
+      input.value = values[f.key] || '';
+    } else if(f.type === 'select'){
+      input = el('select', {});
+      input.appendChild(el('option',{value:''},[text('Select...')]));
+      f.options.forEach(function(o){
+        var optValue = (typeof o === 'object') ? o.value : o;
+        var optLabel = (typeof o === 'object') ? o.label : o;
+        var opt = el('option', {value:optValue}, [text(optLabel)]);
+        if(optValue === values[f.key]) opt.selected = true;
+        input.appendChild(opt);
+      });
+    } else {
+      input = el('input', {type: f.type === 'date' ? 'date' : (f.type === 'number' ? 'number' : 'text')});
+      input.value = values[f.key] || '';
+      if(f.type === 'date'){
+        input.addEventListener('click', function(){ try{ input.showPicker(); }catch(e){} });
+        input.addEventListener('focus', function(){ try{ input.showPicker(); }catch(e){} });
+      }
+    }
+    input.addEventListener('input', function(){
+      values[f.key] = input.value;
+      if(MIRROR_SOURCE_KEYS.indexOf(f.key) !== -1){
+        var mirrorEl = document.getElementById('mirror-' + f.key);
+        if(mirrorEl) mirrorEl.value = input.value;
+      }
+      if(JOB_ID_TRIGGER_KEYS.indexOf(f.key) !== -1){
+        syncJobIdPreview(values);
+      }
+    });
+    if(f.type === 'select' && f.triggersRerender){
+      input.addEventListener('change', function(){
+        if(f.onChangeEffect) f.onChangeEffect(values);
+        render();
+      });
+    }
+    wrap.appendChild(input);
+    if(f.hint) wrap.appendChild(el('span',{class:'hint'},[text(f.hint)]));
+    container.appendChild(wrap);
+  }
+
+  function validateSchema(schema, values, missing){
+    schema.forEach(function(sec){
+      sec.fields.forEach(function(f){
+        if(f.showIf && !f.showIf(values)) return;
+        var isRequired = f.required || (f.requiredIf && f.requiredIf(values));
+        if(!isRequired) return;
+        var val = f.type === 'checkboxgroup' ? Object.keys(values[f.key]||{}).some(function(k){return values[f.key][k];}) : values[f.key];
+        if(!val || (typeof val === 'string' && !val.trim())) missing.push(f.label);
+      });
+    });
+  }
+
+  function renderSchemaForm(container, schema, values){
+    schema.forEach(function(sec){
+      var s = el('div', {class:'section'});
+      s.appendChild(el('h2', {}, [text(sec.section)]));
+      var fields = sec.fields;
+      var i = 0;
+      while(i < fields.length){
+        var f = fields[i];
+        if(f.showIf && !f.showIf(values)){ i++; continue; }
+        if(f.row){
+          var group = [f];
+          var j = i + 1;
+          while(j < fields.length && fields[j].row === f.row){
+            if(!(fields[j].showIf && !fields[j].showIf(values))) group.push(fields[j]);
+            j++;
+          }
+          var rowDiv = el('div', {class: group.length >= 3 ? 'row3' : 'row2'});
+          group.forEach(function(gf){ fieldInput(gf, values, rowDiv); });
+          s.appendChild(rowDiv);
+          i = j;
+        } else {
+          fieldInput(f, values, s);
+          i++;
+        }
+      }
+      container.appendChild(s);
+    });
+  }
+
+  function buildSectionsPayload(schema, values){
+    return schema.map(function(sec){
+      var fields = [];
+      sec.fields.forEach(function(f){
+        if(f.showIf && !f.showIf(values)) return;
+        if(f.type === 'mirror'){
+          fields.push({label:f.label, value: values[f.sourceKey] || ''});
+        } else if(f.type === 'checkboxgroup'){
+          var checked = (f.options||[]).filter(function(o){ return values[f.key] && values[f.key][o.key]; }).map(function(o){ return o.label; });
+          fields.push({label:f.label, value: checked.join(', ') || (f.options.length===1 ? 'No' : '')});
+        } else {
+          fields.push({label:f.label, value: values[f.key] || ''});
+        }
+      });
+      return { section: sec.section, fields: fields };
+    });
+  }
+
+  /* ---------------- Audience Builder ---------------- */
+  function newAudience(){
+    return {
+      id: audienceIdCounter++,
+      collapsed: false,
+      name:'', definition:'',
+      inclusion:[{field:'',operator:'equals',value:''}],
+      exclusion:[],
+      priority:'', quantityTarget:'',
+      geoScope:'', radiusType:'', radiusValue:'', clinicGridLocation:'',
+      dataSources:{}, customerFilePath:'', customerFileQuantity:''
+    };
+  }
+
+  function audienceSummaryText(a){
+    var critCount = a.inclusion.filter(function(r){ return r.field || r.value; }).length;
+    var exclCount = a.exclusion.filter(function(r){ return r.field || r.value; }).length;
+    var parts = [];
+    if(a.definition) parts.push(a.definition);
+    var ruleBits = critCount + ' inclusion rule' + (critCount !== 1 ? 's' : '');
+    if(exclCount) ruleBits += ', ' + exclCount + ' exclusion rule' + (exclCount !== 1 ? 's' : '');
+    parts.push(ruleBits);
+    return parts.join(' — ');
+  }
+
+  function renderAudienceSummary(a){
+    var box = el('div', {class:'audience audience-summary'});
+    var row = el('div', {class:'audience-summary-row'});
+    var left = el('div', {class:'audience-summary-left'});
+    left.appendChild(el('div', {class:'audience-summary-name'}, [text(a.name || 'Untitled Audience')]));
+    left.appendChild(el('div', {class:'audience-summary-desc'}, [text(audienceSummaryText(a))]));
+    row.appendChild(left);
+    var actions = el('div', {class:'audience-summary-actions'});
+    var editBtn = el('button', {class:'btn secondary small', type:'button'}, [text('Edit')]);
+    editBtn.addEventListener('click', function(){ a.collapsed = false; render(); });
+    var rmBtn = el('button', {class:'btn danger small', type:'button'}, [text('Remove')]);
+    rmBtn.addEventListener('click', function(){
+      state.dpValues.audiences = state.dpValues.audiences.filter(function(x){ return x.id !== a.id; });
+      render();
+    });
+    actions.appendChild(editBtn); actions.appendChild(rmBtn);
+    row.appendChild(actions);
+    box.appendChild(row);
+    return box;
+  }
+
+  function renderCriteriaTable(label, rows, addLabel){
+    var wrap = el('div', {class:'crit-table'});
+    wrap.appendChild(el('div', {class:'crit-label'}, [text(label)]));
+    rows.forEach(function(row, idx){
+      var r = el('div', {class:'crit-row'});
+      var fieldInp = el('input', {type:'text', placeholder:'Field (e.g. Home Value)'});
+      fieldInp.value = row.field;
+      fieldInp.addEventListener('input', function(){ row.field = fieldInp.value; });
+
+      var opSel = el('select', {});
+      OPERATORS.forEach(function(o){
+        var opt = el('option', {value:o}, [text(o)]);
+        if(o === row.operator) opt.selected = true;
+        opSel.appendChild(opt);
+      });
+      opSel.addEventListener('change', function(){ row.operator = opSel.value; });
+
+      var valInp = el('input', {type:'text', placeholder:'Value (e.g. 700000+)'});
+      valInp.value = row.value;
+      valInp.addEventListener('input', function(){ row.value = valInp.value; });
+
+      var rm = el('button', {class:'rm', type:'button'}, [text('×')]);
+      rm.addEventListener('click', function(){ rows.splice(idx,1); render(); });
+
+      r.appendChild(fieldInp); r.appendChild(opSel); r.appendChild(valInp); r.appendChild(rm);
+      wrap.appendChild(r);
+    });
+    var addBtn = el('button', {class:'add-crit', type:'button'}, [text('+ ' + addLabel)]);
+    addBtn.addEventListener('click', function(){ rows.push({field:'',operator:'equals',value:''}); render(); });
+    wrap.appendChild(addBtn);
+    return wrap;
+  }
+
+  function renderAudienceBlock(a){
+    var box = el('div', {class:'audience'});
+    var head = el('div', {class:'audience-head'});
+    var nameWrap = el('div', {class:'titlefield'});
+    var nameInput = el('input', {type:'text', placeholder:'Audience name (e.g. Plumbing Cross Sell)'});
+    nameInput.className = 'audience-name-input';
+    nameInput.value = a.name;
+    nameInput.addEventListener('input', function(){ a.name = nameInput.value; });
+    nameWrap.appendChild(nameInput);
+    head.appendChild(nameWrap);
+    var rmBtn = el('button', {class:'btn danger small', type:'button'}, [text('Remove')]);
+    rmBtn.addEventListener('click', function(){
+      state.dpValues.audiences = state.dpValues.audiences.filter(function(x){ return x.id !== a.id; });
+      render();
+    });
+    head.appendChild(rmBtn);
+    box.appendChild(head);
+
+    var defWrap = el('div', {class:'field'});
+    defWrap.appendChild(el('label',{},[text('One-line Definition')]));
+    var defInput = el('textarea', {});
+    defInput.value = a.definition;
+    defInput.style.minHeight = '38px';
+    defInput.addEventListener('input', function(){ a.definition = defInput.value; });
+    defWrap.appendChild(defInput);
+    box.appendChild(defWrap);
+
+    box.appendChild(renderCriteriaTable('Inclusion Criteria', a.inclusion, 'Add inclusion rule'));
+    box.appendChild(renderCriteriaTable('Exclusion Criteria', a.exclusion, 'Add exclusion rule'));
+
+    var row2 = el('div', {class:'row2'});
+    var prWrap = el('div', {class:'field'});
+    prWrap.appendChild(el('label',{},[text('Priority vs. Other Audiences')]));
+    var prSel = el('select', {});
+    prSel.appendChild(el('option',{value:''},[text('Select...')]));
+    ['No overlap expected','Takes priority over other audiences','Deferred to other audiences'].forEach(function(o){
+      var opt = el('option', {value:o}, [text(o)]);
+      if(o === a.priority) opt.selected = true;
+      prSel.appendChild(opt);
+    });
+    prSel.addEventListener('change', function(){ a.priority = prSel.value; });
+    prWrap.appendChild(prSel);
+
+    var qWrap = el('div', {class:'field'});
+    qWrap.appendChild(el('label',{},[text('Quantity Target/Cap')]));
+    var qInput = el('input', {type:'text', inputmode:'decimal'});
+    qInput.value = a.quantityTarget;
+    qInput.addEventListener('input', function(){
+      var raw = qInput.value.replace(/[^0-9.]/g,'');
+      var formatted = formatThousands(raw);
+      a.quantityTarget = formatted;
+      qInput.value = formatted;
+    });
+    qWrap.appendChild(qInput);
+
+    row2.appendChild(prWrap); row2.appendChild(qWrap);
+    box.appendChild(row2);
+
+    box.appendChild(el('div', {class:'crit-label'}, [text('Geographic Criteria')]));
+    var geoRow = el('div', {class:'geo-row'});
+
+    var geoScopeWrap = el('div', {class:'field'});
+    geoScopeWrap.appendChild(el('label',{},[text('Area / Market')]));
+    var geoScopeInput = el('input', {type:'text', placeholder:'e.g. Denver CBSA, or clinic name'});
+    geoScopeInput.value = a.geoScope;
+    geoScopeInput.addEventListener('input', function(){ a.geoScope = geoScopeInput.value; });
+    geoScopeWrap.appendChild(geoScopeInput);
+
+    var radiusValWrap = el('div', {class:'field'});
+    radiusValWrap.appendChild(el('label',{},[text('Radius Value')]));
+    var radiusValInput = el('input', {type:'text', placeholder:'e.g. 10'});
+    radiusValInput.value = a.radiusValue;
+    radiusValInput.addEventListener('input', function(){ a.radiusValue = radiusValInput.value; });
+    radiusValWrap.appendChild(radiusValInput);
+
+    var radiusTypeWrap = el('div', {class:'field'});
+    radiusTypeWrap.appendChild(el('label',{},[text('Radius Type')]));
+    var radiusTypeSel = el('select', {});
+    radiusTypeSel.appendChild(el('option',{value:''},[text('Select...')]));
+    ['Drivetime (minutes)','Miles'].forEach(function(o){
+      var opt = el('option', {value:o}, [text(o)]);
+      if(o === a.radiusType) opt.selected = true;
+      radiusTypeSel.appendChild(opt);
+    });
+    radiusTypeSel.addEventListener('change', function(){ a.radiusType = radiusTypeSel.value; });
+    radiusTypeWrap.appendChild(radiusTypeSel);
+
+    geoRow.appendChild(geoScopeWrap); geoRow.appendChild(radiusValWrap); geoRow.appendChild(radiusTypeWrap);
+    box.appendChild(geoRow);
+
+    var gridWrap = el('div', {class:'field'});
+    gridWrap.appendChild(el('label',{},[text('Clinic Grid File Location')]));
+    var gridInput = el('input', {type:'text', placeholder:'File path or Drive link'});
+    gridInput.value = a.clinicGridLocation;
+    gridInput.addEventListener('input', function(){ a.clinicGridLocation = gridInput.value; });
+    gridWrap.appendChild(gridInput);
+    box.appendChild(gridWrap);
+
+    var dsWrap = el('div', {class:'field'});
+    dsWrap.appendChild(el('label',{},[text('Data Source(s)')]));
+    var dsGrp = el('div', {class:'checkgroup'});
+    DATA_SOURCE_OPTIONS.forEach(function(o){
+      var id = 'ds_' + a.id + '_' + o.key;
+      var item = el('label', {class:'checkitem', for:id});
+      var cb = el('input', {type:'checkbox', id:id});
+      cb.checked = !!a.dataSources[o.key];
+      cb.addEventListener('change', function(){ a.dataSources[o.key] = cb.checked; render(); });
+      item.appendChild(cb); item.appendChild(text(o.label));
+      dsGrp.appendChild(item);
+    });
+    dsWrap.appendChild(dsGrp);
+    box.appendChild(dsWrap);
+
+    if(a.dataSources.customerFileProvided){
+      var cfRow = el('div', {class:'row2'});
+      var pathWrap = el('div', {class:'field'});
+      pathWrap.appendChild(el('label',{},[text('Customer File Path')]));
+      var pathInput = el('input', {type:'text', placeholder:'File path or Drive link'});
+      pathInput.value = a.customerFilePath;
+      pathInput.addEventListener('input', function(){ a.customerFilePath = pathInput.value; });
+      pathWrap.appendChild(pathInput);
+
+      var qtyWrap = el('div', {class:'field'});
+      qtyWrap.appendChild(el('label',{},[text('File Quantity')]));
+      var qtyInput = el('input', {type:'text', inputmode:'decimal'});
+      qtyInput.value = a.customerFileQuantity;
+      qtyInput.addEventListener('input', function(){
+        var raw = qtyInput.value.replace(/[^0-9.]/g,'');
+        var formatted = formatThousands(raw);
+        a.customerFileQuantity = formatted;
+        qtyInput.value = formatted;
+      });
+      qtyWrap.appendChild(qtyInput);
+
+      cfRow.appendChild(pathWrap); cfRow.appendChild(qtyWrap);
+      box.appendChild(cfRow);
+    }
+
+    return box;
+  }
+
+  function renderAudienceBuilder(container){
+    var s = el('div', {class:'section'});
+    s.appendChild(el('h2', {}, [text('Audience Builder')]));
+    state.dpValues.audiences.forEach(function(a){
+      s.appendChild(a.collapsed ? renderAudienceSummary(a) : renderAudienceBlock(a));
+    });
+    var addBtn = el('button', {class:'add-audience', type:'button'}, [text('+ Add Audience')]);
+    addBtn.addEventListener('click', function(){
+      state.dpValues.audiences.forEach(function(a){ a.collapsed = true; });
+      state.dpValues.audiences.push(newAudience());
+      render();
+    });
+    s.appendChild(addBtn);
+    container.appendChild(s);
+  }
+
+  function audiencesToSections(audiences){
+    return audiences.map(function(a, i){
+      var fields = [];
+      fields.push({label:'Definition', value:a.definition || ''});
+      fields.push({label:'Inclusion Criteria', value: a.inclusion.filter(function(r){return r.field||r.value;}).map(function(r){ return r.field + ' ' + r.operator + ' ' + r.value; }).join(' | ')});
+      fields.push({label:'Exclusion Criteria', value: a.exclusion.filter(function(r){return r.field||r.value;}).map(function(r){ return r.field + ' ' + r.operator + ' ' + r.value; }).join(' | ')});
+      fields.push({label:'Priority', value:a.priority || ''});
+      fields.push({label:'Quantity Target/Cap', value:a.quantityTarget || ''});
+      fields.push({label:'Area / Market', value:a.geoScope || ''});
+      fields.push({label:'Radius', value: (a.radiusValue && a.radiusType) ? (a.radiusValue + ' ' + a.radiusType) : ''});
+      fields.push({label:'Clinic Grid File Location', value:a.clinicGridLocation || ''});
+      var ds = DATA_SOURCE_OPTIONS.filter(function(o){ return a.dataSources[o.key]; }).map(function(o){ return o.label; });
+      fields.push({label:'Data Source(s)', value: ds.join(', ')});
+      if(a.dataSources.customerFileProvided){
+        fields.push({label:'Customer File Path', value:a.customerFilePath || ''});
+        fields.push({label:'Customer File Quantity', value:a.customerFileQuantity || ''});
+      }
+      return { section: 'Audience ' + (i+1) + ': ' + (a.name || 'Untitled'), fields: fields };
+    });
+  }
+
+  /* ---------------- backend + storage ---------------- */
+  async function callBackend(action, payload){
+    if(!state.appsScriptUrl) throw new Error('Apps Script Web App URL is not set. Click "Connect Sheet" to add it.');
+    var res = await fetch(state.appsScriptUrl, { method: 'POST', body: JSON.stringify({ action: action, payload: payload }) });
+    var data = await res.json();
+    if(!data.success) throw new Error(data.error || 'Unknown error');
+    return data;
+  }
+  async function loadStoredUrl(){
+    try{ var r = await window.storage.get('appsScriptUrl'); if(r && r.value) state.appsScriptUrl = r.value; }catch(e){}
+  }
+  async function saveStoredUrl(url){
+    state.appsScriptUrl = url;
+    try{ await window.storage.set('appsScriptUrl', url); }catch(e){}
+  }
+
+  function showModal(){
+    var overlay = el('div', {class:'modal-overlay'});
+    var modal = el('div', {class:'modal'});
+    modal.appendChild(el('h3', {}, [text('Connect your Sheet backend')]));
+    modal.appendChild(el('p', {}, [text('Paste the Apps Script Web App URL (from Deploy > New deployment > Web app).')]));
+    var input = el('input', {type:'text', placeholder:'https://script.google.com/macros/s/.../exec'});
+    input.style.cssText = 'width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:12px;';
+    input.value = state.appsScriptUrl;
+    modal.appendChild(input);
+    var actions = el('div', {class:'modal-actions'});
+    var cancel = el('button', {class:'btn secondary'}, [text('Cancel')]);
+    var save = el('button', {class:'btn'}, [text('Save')]);
+    cancel.addEventListener('click', function(){ document.body.removeChild(overlay); });
+    save.addEventListener('click', async function(){ await saveStoredUrl(input.value.trim()); document.body.removeChild(overlay); render(); });
+    actions.appendChild(cancel); actions.appendChild(save);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
+  function renderTopbar(root){
+    var bar = el('div', {class:'topbar'});
+    var left = el('div', {class:'left'});
+    var logoImg = el('img', {class:'logo', src:'data:image/png;base64,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EQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAYEQ8AAAAAAADCiHgAAAAAAAAQRsQDAAAAAACAMCIeAAAAAAAAhBHxAAAAAAAAIIyIBwAAAAAAAGFEPAAAAAAAAAgj4gEAAAAAAEAY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AAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAADIjBIPAAAAAAAAMqPEAwAAAAAAgMwo8QAAAAAAACAzSjwAAAAAAAD4/+zcsQmAUBAFwcTAMuzEX5qBhZtYwCEIG8zANfDShYsR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiNlMMLb2dV9mAAAAAAAA+OwwwYyIN3e+BwAAAAAAAL/yThMAAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAGBEPAAAAAAAAYkQ8AAAAAAAAiBHxAAAAAAAAIEbEAwAAAAAAgBgRDwAAAAAAAGJEPAAAAAAAAIgR8QAAAAAAACBGxAMAAAAAAIAYEQ8AAAAAAABiRDwAAAAAAACIEfEAAAAAAAAgRsQDAAAAAACAmEeA9uxYAAAAAGCQv/U0dpRGEg8AAAAAAABmJB4AAAAAAADMSDwAAAAAAACYkXgAAAAAAAAwI/EAAAAAAABgRuIBAAAAAADAjMQDAAAAAACAGYkHAAAAAAAAMxIPAAAAAAAAZiQeAAAAAAAAzEg8AAAAAAAAmJF4AAAAAAAAMCPxAAAAAAAAYEbiAQAAAAAAwIzEAwAAAAAAgBmJBwAAAAAAADMSDwAAAAAAAGYkHgAAAAAAAMxIPAAAAAAAAJiReAAAAAAAADAj8QAAAAAAAGAmTPhZwhuAn4YAAAAASUVORK5CYII=', alt:'Reflex Blu'});
+    left.appendChild(logoImg);
+    left.appendChild(el('div', {}, [
+      el('h1', {}, [text('Reflex Blu - Data Workflow')]),
+    ]));
+    var gear = el('button', {class:'gear'}, [text(state.appsScriptUrl ? 'Sheet connected ✓' : 'Connect Sheet')]);
+    gear.addEventListener('click', showModal);
+    bar.appendChild(left); bar.appendChild(gear);
+    root.appendChild(bar);
+  }
+
+  function renderFlow(root){
+    var flow = el('div', {class:'flow'});
+    var n1 = el('div', {class:'flownode' + ((state.view==='dp'||state.view==='review') ? ' active' : '')}, [
+      el('div',{class:'num'},[text('1')]),
+      el('div', {}, [el('div',{class:'label'},[text('New DP Instructions')]), el('div',{class:'desc'},[text('Creates the job Sheet')])])
+    ]);
+    var n2 = el('div', {class:'flownode' + (state.view==='writeup' ? ' active' : '')}, [
+      el('div',{class:'num'},[text('2')]),
+      el('div', {}, [el('div',{class:'label'},[text('Post-Processing Writeup')]), el('div',{class:'desc'},[text('Updates it after the run')])])
+    ]);
+    n1.addEventListener('click', function(){ state.view='dp'; render(); });
+    n2.addEventListener('click', function(){ state.view='writeup'; render(); });
+    flow.appendChild(n1); flow.appendChild(el('div',{class:'flowline'})); flow.appendChild(n2);
+    root.appendChild(flow);
+  }
+
+  function renderDpView(root){
+    var panel = el('div', {class:'panel'});
+    if(state.dpMsg) panel.appendChild(state.dpMsg);
+    renderSchemaForm(panel, DP_SCHEMA_TOP, state.dpValues);
+    renderAudienceBuilder(panel);
+    renderSchemaForm(panel, DP_SCHEMA_BOTTOM, state.dpValues);
+
+    var actions = el('div', {class:'footer-actions'});
+    var btn = el('button', {class:'btn'}, [text('Review Selections')]);
+    btn.addEventListener('click', function(){
+      if(!state.dpValues.jobNumber || !state.dpValues.jobNumber.trim()){
+        state.dpMsg = el('div', {class:'msg error'}, [text('Job Number and Client are both required to generate the Job ID.')]);
+        render();
+        return;
+      }
+      var missing = [];
+      validateSchema(DP_SCHEMA_TOP, state.dpValues, missing);
+      validateSchema(DP_SCHEMA_BOTTOM, state.dpValues, missing);
+      if(missing.length){
+        state.dpMsg = el('div', {class:'msg error'}, [text('Missing required field(s): ' + missing.join(', '))]);
+        render();
+        return;
+      }
+      state.dpMsg = null;
+      state.view = 'review';
+      render();
+      window.scrollTo(0, 0);
+    });
+    actions.appendChild(btn);
+    panel.appendChild(actions);
+    root.appendChild(panel);
+  }
+
+  function summaryRow(label, value){
+    var row = el('div', {class:'review-row'});
+    row.appendChild(el('div', {class:'review-label'}, [text(label)]));
+    row.appendChild(el('div', {class:'review-value'}, [text(value && String(value).trim() ? value : '—')]));
+    return row;
+  }
+
+  function renderReviewSection(container, title, fields){
+    var s = el('div', {class:'section'});
+    s.appendChild(el('h2', {}, [text(title)]));
+    fields.forEach(function(f){ s.appendChild(summaryRow(f.label, f.value)); });
+    container.appendChild(s);
+  }
+
+  function renderReviewView(root){
+    var panel = el('div', {class:'panel'});
+    if(state.dpMsg) panel.appendChild(state.dpMsg);
+
+    panel.appendChild(el('div', {class:'review-heading'}, [text('Review before sending')]));
+    panel.appendChild(el('div', {class:'review-subheading'}, [text('Job # ' + state.dpValues.jobNumber)]));
+
+    var sections = buildSectionsPayload(DP_SCHEMA_TOP, state.dpValues)
+      .concat(audiencesToSections(state.dpValues.audiences))
+      .concat(buildSectionsPayload(DP_SCHEMA_BOTTOM, state.dpValues));
+    sections.forEach(function(sec){ renderReviewSection(panel, sec.section, sec.fields); });
+
+    var actions = el('div', {class:'footer-actions'});
+    var editBtn = el('button', {class:'btn secondary'}, [text('Edit')]);
+    editBtn.addEventListener('click', function(){ state.view = 'dp'; state.dpMsg = null; render(); window.scrollTo(0,0); });
+    var sendBtn = el('button', {class:'btn'}, [text('Send DP Instructions')]);
+    sendBtn.addEventListener('click', async function(){
+      sendBtn.disabled = true; sendBtn.textContent = 'Sending...';
+      try{
+        var payload = {
+          jobNumber: state.dpValues.jobNumber.trim(),
+          customer: state.dpValues.customer || '',
+          project: state.dpValues.project || '',
+          sections: sections
+        };
+        var res = await callBackend('createJob', payload);
+        state.dpMsg = el('div', {class:'msg success'});
+        state.dpMsg.appendChild(text('Job Sheet created. '));
+        state.dpMsg.appendChild(el('a', {href: res.url, target:'_blank'}, [text('Open in Google Sheets →')]));
+        if(res.emailWarning){
+          state.dpMsg.appendChild(el('div', {style:'margin-top:8px;color:var(--warn);font-weight:600;'}, [text('Note: confirmation emails failed to send — ' + res.emailWarning)]));
+        }
+        state.view = 'dp';
+      }catch(err){
+        state.dpMsg = el('div', {class:'msg error'}, [text(err.message)]);
+      }
+      render();
+    });
+    actions.appendChild(editBtn); actions.appendChild(sendBtn);
+    panel.appendChild(actions);
+    root.appendChild(panel);
+  }
+
+  function parseWaterfallCategories(raw){
+    if(!raw) return [];
+    return raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function ensureJobsLoaded(){
+    if(state.allJobs !== null || state.jobsLoading) return;
+    state.jobsLoading = true;
+    callBackend('listJobs', {}).then(function(res){
+      state.allJobs = res.jobs || [];
+      state.jobsLoading = false;
+      render();
+    }).catch(function(err){
+      state.allJobs = [];
+      state.jobsLoading = false;
+      render();
+    });
+  }
+
+  async function loadJobForWriteup(jn){
+    try{
+      var res = await callBackend('getJob', { jobNumber: jn });
+      state.writeupJobNumber = jn;
+      state.writeupJob = res.fields;
+      state.writeupWaterfall = parseWaterfallCategories(res.fields['Waterfall Report Counts Needed']);
+      state.writeupValues = {};
+      state.writeupMsg = null;
+    }catch(err){
+      state.writeupMsg = el('div', {class:'msg error'}, [text(err.message)]);
+      state.writeupJob = null;
+    }
+    render();
+  }
+
+  function renderJobSearchResults(resultsBox){
+    resultsBox.innerHTML = '';
+    if(state.jobsLoading){
+      resultsBox.appendChild(el('div',{class:'job-search-empty'},[text('Loading jobs…')]));
+      return;
+    }
+    var query = (state.jobSearchQuery || '').trim().toLowerCase();
+    if(!query){
+      resultsBox.appendChild(el('div',{class:'job-search-empty'},[text('Start typing to search — matches Job #, Client, or Project')]));
+      return;
+    }
+    var matches = (state.allJobs || []).filter(function(j){
+      return (j.jobNumber||'').toLowerCase().indexOf(query) !== -1
+        || (j.jobNumberRaw||'').toLowerCase().indexOf(query) !== -1
+        || (j.customer||'').toLowerCase().indexOf(query) !== -1
+        || (j.project||'').toLowerCase().indexOf(query) !== -1;
+    });
+    if(!matches.length){
+      resultsBox.appendChild(el('div',{class:'job-search-empty'},[text('No matching jobs found')]));
+      return;
+    }
+    matches.slice(0,25).forEach(function(j){
+      var row = el('div', {class:'job-search-row'});
+      row.appendChild(el('div',{class:'job-search-row-id'},[text(j.jobNumber)]));
+      row.appendChild(el('div',{class:'job-search-row-meta'},[text((j.customer||'—') + ' · ' + (j.project||'—'))]));
+      row.addEventListener('click', function(){ loadJobForWriteup(j.jobNumber); });
+      resultsBox.appendChild(row);
+    });
+  }
+
+  function renderWriteupView(root){
+    var panel = el('div', {class:'panel'});
+    ensureJobsLoaded();
+
+    if(!state.writeupJob){
+      var searchWrap = el('div', {class:'field'});
+      searchWrap.appendChild(el('label',{},[text('Search Jobs')]));
+      var searchInput = el('input', {type:'text', placeholder:'Type a Job #, Client, or Project — e.g. "REG" or "7547"'});
+      searchInput.value = state.jobSearchQuery || '';
+      var resultsBox = el('div', {class:'job-search-results', id:'job-search-results'});
+      searchInput.addEventListener('input', function(){
+        state.jobSearchQuery = searchInput.value;
+        renderJobSearchResults(resultsBox);
+      });
+      searchWrap.appendChild(searchInput);
+      searchWrap.appendChild(resultsBox);
+      panel.appendChild(searchWrap);
+      renderJobSearchResults(resultsBox);
+    } else {
+      var backBtn = el('button', {class:'btn secondary small'}, [text('← Search a different job')]);
+      backBtn.style.marginBottom = '16px';
+      backBtn.addEventListener('click', function(){
+        state.writeupJob = null;
+        state.writeupJobNumber = '';
+        state.jobSearchQuery = '';
+        state.writeupMsg = null;
+        render();
+      });
+      panel.appendChild(backBtn);
+    }
+
+    if(state.writeupMsg) panel.appendChild(state.writeupMsg);
+
+    if(state.writeupJob){
+      var ref = el('div', {class:'refbox'});
+      ref.appendChild(el('div',{class:'reftitle'},[text('Referencing: ' + state.writeupJobNumber)]));
+      var grid = el('div', {class:'refgrid'});
+      ['Client','Project'].forEach(function(k){
+        grid.appendChild(el('div', {}, [el('span',{},[text(k)]), text(state.writeupJob[k] || '—')]));
+      });
+      ref.appendChild(grid);
+      panel.appendChild(ref);
+
+      if(state.writeupWaterfall.length){
+        var wsec = el('div', {class:'section'});
+        wsec.appendChild(el('h2', {}, [text('Waterfall Actual Counts')]));
+        state.writeupValues.waterfall = state.writeupValues.waterfall || {};
+        state.writeupWaterfall.forEach(function(cat){
+          var row = el('div', {class:'waterfallrow'});
+          row.appendChild(el('div',{class:'catname'},[text(cat)]));
+          var inp = el('input', {type:'text', placeholder:'Actual count'});
+          inp.addEventListener('input', function(){ state.writeupValues.waterfall[cat] = inp.value; });
+          row.appendChild(inp);
+          wsec.appendChild(row);
+        });
+        panel.appendChild(wsec);
+      }
+
+      renderSchemaForm(panel, WRITEUP_STATIC, state.writeupValues);
+
+      var actions = el('div', {class:'footer-actions'});
+      var btn = el('button', {class:'btn'}, [text('Submit Writeup')]);
+      btn.addEventListener('click', async function(){
+        btn.disabled = true; btn.textContent = 'Saving...';
+        try{
+          var sections = buildSectionsPayload(WRITEUP_STATIC, state.writeupValues);
+          if(state.writeupWaterfall.length){
+            sections.unshift({
+              section: 'Waterfall Actual Counts',
+              fields: state.writeupWaterfall.map(function(cat){
+                return { label: cat, value: (state.writeupValues.waterfall && state.writeupValues.waterfall[cat]) || '' };
+              })
+            });
+          }
+          var res = await callBackend('submitWriteup', { jobNumber: state.writeupJobNumber, sections: sections });
+          state.writeupMsg = el('div', {class:'msg success'});
+          state.writeupMsg.appendChild(text('Writeup saved. '));
+          state.writeupMsg.appendChild(el('a', {href: res.url, target:'_blank'}, [text('Open in Google Sheets →')]));
+          if(res.emailWarning){
+            state.writeupMsg.appendChild(el('div', {style:'margin-top:8px;color:var(--warn);font-weight:600;'}, [text('Note: confirmation email failed to send — ' + res.emailWarning)]));
+          }
+        }catch(err){
+          state.writeupMsg = el('div', {class:'msg error'}, [text(err.message)]);
+        }
+        render();
+      });
+      actions.appendChild(btn);
+      panel.appendChild(actions);
+    }
+    root.appendChild(panel);
+  }
+
+  function render(){
+    var root = document.getElementById('app');
+    root.innerHTML = '';
+    renderTopbar(root);
+    renderFlow(root);
+    if(!state.appsScriptUrl){
+      var warn = el('div', {class:'msg error'}, [text('No Sheet backend connected yet — click "Connect Sheet" above to paste your Apps Script Web App URL.')]);
+      warn.style.margin = '0 4px 16px';
+      root.appendChild(warn);
+    }
+    if(state.view === 'dp') renderDpView(root);
+    else if(state.view === 'review') renderReviewView(root);
+    else renderWriteupView(root);
+  }
+
+  if(state.dpValues.audiences.length === 0) state.dpValues.audiences.push(newAudience());
+  loadStoredUrl().then(render);
+})();
+</script>
